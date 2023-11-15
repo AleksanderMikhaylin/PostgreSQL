@@ -19,17 +19,12 @@ def create_tables(conn: object) -> object:
             id_client INTEGER NOT NULL REFERENCES clients(id)
         );
         """)
-        conn.commit()
+        # conn.commit()
 
 # Функция, позволяющая добавить телефон для существующего клиента.
 def add_phone(conn, id_client, phone, messages=True):
-    if id_client is None:
-        return
-    if phone is None:
-        return
-    elif not type(id_client) == int:
-        print()
-        print(f'Не верный id клиента!')
+
+    if phone == None:
         return
 
     with conn.cursor() as cur:
@@ -53,7 +48,7 @@ def add_phone(conn, id_client, phone, messages=True):
                 cur.execute("""
                 INSERT INTO phones(phone, id_client) VALUES(%s, %s);
                 """, (phone, id_client))
-                conn.commit()
+                # conn.commit()
                 if messages:
                     print()
                     print(f'Клиенту {name} {surname} добавлен телефон: {phone}')
@@ -67,7 +62,8 @@ def add_phone(conn, id_client, phone, messages=True):
                 print(f'Клиент с id={id_client} не найден!')
 
 # Функция, позволяющая добавить нового клиента.
-def create_client(conn, name, surname, email, phone, messages=True):
+def add_client(conn, name, surname, email, phone=None, messages=True):
+
     with conn.cursor() as cur:
 
         cur.execute("""
@@ -80,7 +76,7 @@ def create_client(conn, name, surname, email, phone, messages=True):
             INSERT INTO clients(name, surname, email) VALUES(%s, %s, %s) RETURNING id;
             """, (name, surname, email))
             id_client = cur.fetchone()[0]
-            conn.commit()
+            # conn.commit()
             if messages:
                 print()
                 print(f'Клиент {name} {surname}, email: {email} занесен в БД с id={id_client}')
@@ -92,61 +88,30 @@ def create_client(conn, name, surname, email, phone, messages=True):
                 print(f'Клиент с такими комбинациями Имя = {name}, Фамилия = {surname} и email = {email} существует!')
             return result[0]
 
-def add_client(conn, name=None, surname=None, email=None, phone=None, messages=True):
-    if name is None:
-        name = input('Введите имя клиента: ')
-    if surname is None:
-        surname = input('Введите фамилию клиента: ')
-    if email is None:
-        email = input('Введите e-mail клиента: ')
-
-    return create_client(conn, name, surname, email, phone, messages)
-
 # Функция, позволяющая изменить данные о клиенте.
+
 def update_clietn(conn, id_client, name=None, surname=None, email=None, messages=True):
-    if id_client is None:
-        return
-    elif not type(id_client) == int:
-        print()
-        print(f'Не верный id клиента!')
-        return
 
-    with conn.cursor() as cur:
-
-        cur.execute("""
-        SELECT id FROM clients WHERE id=%s;
-        """, (id_client,))
-
-        result = cur.fetchone()
-        if not result is None:
-
-            if name is None:
-                name = input('Введите имя клиента: ')
-            if surname is None:
-                surname = input('Введите фамилию клиента: ')
-            if email is None:
-                email = input('Введите e-mail клиента: ')
-
-            cur.execute("""
-            UPDATE clients SET name=%s, surname=%s, email=%s WHERE id=%s;
-            """, (name, surname, email, id_client))
-            conn.commit()
+        with conn.cursor() as cur:
+            if not name == None:
+                cur.execute("""
+                UPDATE clients SET name=%s WHERE id=%s;
+                """, (name, id_client, ))
+            if not surname == None:
+                cur.execute("""
+                UPDATE clients SET surname=%s WHERE id=%s;
+                """, (surname, id_client, ))
+            if not email == None:
+                cur.execute("""
+                UPDATE clients SET email=%s WHERE id=%s;
+                """, (email, id_client, ))
+                # conn.commit()
             if messages:
                 print()
                 print(f'Данные клиента с id={id_client} обновлены!')
-        else:
-            if messages:
-                print()
-                print(f'Клиент с id={id_client} не найден!')
 
 # Функция, позволяющая удалить телефон для существующего клиента.
 def del_phone(conn, id_client, phone, messages=True):
-    if id_client is None:
-        return
-    elif not type(id_client) == int:
-        print()
-        print(f'Не верный id клиента!')
-        return
 
     with conn.cursor() as cur:
 
@@ -169,7 +134,7 @@ def del_phone(conn, id_client, phone, messages=True):
                 cur.execute("""
                 DELETE FROM phones WHERE phone=%s and id_client=%s;
                 """, (phone, id_client))
-                conn.commit()
+                # conn.commit()
                 if messages:
                     print()
                     print(f'Телефон {phone} у клиента {name} {surname} удален!')
@@ -184,12 +149,6 @@ def del_phone(conn, id_client, phone, messages=True):
 
 # Функция, позволяющая удалить существующего клиента.
 def del_client(conn, id_client, messages=True):
-    if id_client is None:
-        return
-    elif not type(id_client) == int:
-        print()
-        print(f'Не верный id клиента!')
-        return
 
     with conn.cursor() as cur:
 
@@ -211,7 +170,7 @@ def del_client(conn, id_client, messages=True):
             cur.execute("""
             DELETE FROM clients WHERE id=%s;
             """, (id_client,))
-            conn.commit()
+            # conn.commit()
             if messages:
                 print()
                 print(f'Клиент {name} {surname} с email {email} удален! ')
@@ -220,50 +179,53 @@ def del_client(conn, id_client, messages=True):
                 print()
                 print(f'Клиент с id={id_client} не найден!')
 
+# # Функция проверяет, существует ли id клиента в таблице
+def id_client_is_valid(id_client):
+    find = False
+    if id_client is None:
+        pass
+    elif not type(id_client) == int:
+        pass
+    else:
+        with conn.cursor() as cur:
+
+            cur.execute("""
+            SELECT id FROM clients WHERE id=%s;
+            """, (id_client,))
+
+            result = cur.fetchone()
+            find = not result is None
+
+    if not find:
+        print()
+        print(f'Клиент с id={id_client} не найден!')
+
+    return find
+
 # # Функция, позволяющая найти клиента по его данным: имени, фамилии, email или телефону.
 def find_client(conn, name=None, surname=None, email=None, phone=None) -> list:
-    if name is None:
-        name = input('Введите имя клиента: ')
-    if surname is None:
-        surname = input('Введите фамилию клиента: ')
-    if email is None:
-        email = input('Введите e-mail клиента: ')
-    if phone is None:
-        phone = input('Введите телефон клиента: ')
 
     client_list = []
     with conn.cursor() as cur:
 
-        if not name is None:
-            cur.execute("""
-            SELECT id, name, surname, email FROM clients WHERE name=%s;
-            """, (name,))
-            result = cur.fetchall()
-            client_list += result
+        all_name = name == None
+        all_surname = surname == None
+        all_email = email == None
+        all_phone = phone == None
 
-        if not surname is None:
-            cur.execute("""
-            SELECT id, name, surname, email FROM clients WHERE surname=%s;
-            """, (surname,))
-            result = cur.fetchall()
-            client_list += result
+        cur.execute("""
+        SELECT c.id, c.name, c.surname, c.email, p.phone 
+        FROM clients as c 
+            left join phones p
+                on c.id = p.id_client
+        WHERE (c.name iLIKE %s or True=%s) 
+            and (c.surname iLIKE %s or True=%s)
+            and (c.email iLIKE %s or True=%s)
+            and (p.phone iLIKE %s or True=%s);
+        """, ('%'+name+'%', all_name, '%'+surname+'%', all_surname, '%'+email+'%', all_email, '%'+phone+'%', all_phone, ))
 
-        if not email is None:
-            cur.execute("""
-            SELECT id, name, surname, email FROM clients WHERE email=%s;
-            """, (email,))
-            result = cur.fetchall()
-            client_list += result
-
-        if not phone is None:
-            cur.execute("""
-            SELECT id, name, surname, email FROM clients c
-                left join phones p
-                    on c.id = p.id_client 
-            WHERE p.phone=%s;
-            """, (phone,))
-            result = cur.fetchall()
-            client_list += result
+        result = cur.fetchall()
+        client_list += result
 
     return list(set(client_list))
 
@@ -289,7 +251,7 @@ def clear_all_phones(conn, messages=True):
         cur.execute("""
         DELETE FROM phones
         """)
-        conn.commit()
+        # conn.commit()
         if messages:
             print()
             print(f'Таблица телефонов очищена')
@@ -308,7 +270,7 @@ def clear_all_client(conn, messages=True):
             cur.execute("""
             DELETE FROM clients
             """)
-            conn.commit()
+            # conn.commit()
             if messages:
                 print()
                 print(f'Таблица клиентов очищена')
@@ -318,19 +280,18 @@ def clear_all_client(conn, messages=True):
                 print(f'Ошибка очистки таблицы клиентов')
 
 def input_id_clietn():
-    while True:
-        id_client = ''
-        id = input('Введите id клиента (целое число): ')
-        if id == '':
-            continue
+    id_client = ''
+    id = input('Введите id клиента (целое число): ')
 
-        for i in id:
-            if not i in ['0','1','2','3','4','5','6','7','8','9']:
-                break
-            id_client += i
+    for i in id:
+        if not i in ['0','1','2','3','4','5','6','7','8','9']:
+            break
+        id_client += i
 
-        if id_client == id:
-            return int(id_client)
+    if id_client == id:
+        return int(id_client)
+
+    return id
 
 def input_key():
     key = input('0 - Выход\n'
@@ -346,57 +307,105 @@ def input_key():
                 'Ваш выбор: ')
     return key
 
+
 if __name__ == '__main__':
 
     data_base = input('Введите имя БД>: ')
     user = input('Введите логин: ')
     password = input('Введите пароль: ')
 
-    conn = psycopg2.connect(database=data_base, user=user, password=password)
+    with psycopg2.connect(database=data_base, user=user, password=password) as conn:
 
-    create_tables(conn)
-    id_client = add_client(conn,'Иван', 'Иванов','ivanov@mail.ru', '+79241111111',messages=False)
-    id_client = add_client(conn, 'Петр', 'Петров','petrov@mail.ru', messages=False)
-    add_phone(conn, id_client, '+79242222222', messages=False)
-    id_client = add_client(conn, 'Сидор', 'Сидоров','sidorov@mail.ru', messages=False)
-    add_phone(conn, id_client, '+79243333333', messages=False)
+        create_tables(conn)
+        id_client = add_client(conn,'Иван', 'Иванов','ivanov@mail.ru', '+79241111111',messages=False)
+        id_client = add_client(conn, 'Петр', 'Петров','petrov@mail.ru', messages=False)
+        add_phone(conn, id_client, '+79242222222', messages=False)
+        id_client = add_client(conn, 'Сидор', 'Сидоров','sidorov@mail.ru', messages=False)
+        add_phone(conn, id_client, '+79243333333', messages=False)
 
-    key = input_key()
-    while True:
-        if key == '0':
-            conn.close()
-            exit()
-        if key == '1':
-            add_client(conn)
-        elif key == '2':
-            id_client = input_id_clietn()
-            phone = input('Введите номер телефона: ')
-            add_phone(conn, id_client, phone)
-        elif key == '3':
-            id_client = input_id_clietn()
-            update_clietn(conn, id_client)
-        elif key == '4':
-            id_client = input_id_clietn()
-            phone = input('Введите номер телефона: ')
-            del_phone(conn, id_client, phone)
-        elif key == '5':
-            id_client = input_id_clietn()
-            del_client(conn, id_client)
-        elif key == '6':
-            client_list = find_client(conn)
-            print()
-            print(*client_list, sep="\n")
-        elif key == '7':
-            client_list = all_client(conn)
-            print()
-            print(*client_list, sep="\n")
-        elif key == '8':
-            clear_all_phones(conn, True)
-        elif key == '9':
-            clear_all_client(conn, True)
-        else:
-            print('')
-            print('Введено не верное значение!')
-
-        print('')
         key = input_key()
+        while True:
+            if key == '0':
+                break
+                # conn.close()
+                # exit()
+            if key == '1':
+
+                name = input('Введите имя клиента: ')
+                surname = input('Введите фамилию клиента: ')
+                email = input('Введите e-mail клиента: ')
+                add_client(conn)
+
+            elif key == '2':
+
+                id_client = input_id_clietn()
+                if id_client_is_valid(id_client):
+                    phone = input('Введите номер телефона: ')
+                    add_phone(conn, id_client, phone)
+                else:
+                    print()
+                    print(f'Клиент с id={id_client} не найден!')
+
+            elif key == '3':
+
+                id_client = input_id_clietn()
+                if id_client_is_valid(id_client):
+                    name = input('Введите имя клиента: ')
+                    surname = input('Введите фамилию клиента: ')
+                    email = input('Введите e-mail клиента: ')
+                    update_clietn(conn, id_client, name, surname, email)
+                else:
+                    print()
+                    print(f'Клиент с id={id_client} не найден!')
+
+            elif key == '4':
+
+                id_client = input_id_clietn()
+                if id_client_is_valid(id_client):
+                    phone = input('Введите номер телефона: ')
+                    del_phone(conn, id_client, phone)
+                else:
+                    print()
+                    print(f'Клиент с id={id_client} не найден!')
+
+            elif key == '5':
+
+                id_client = input_id_clietn()
+                if id_client_is_valid(id_client):
+                    del_client(conn, id_client)
+                else:
+                    print()
+                    print(f'Клиент с id={id_client} не найден!')
+
+            elif key == '6':
+
+                name = input('Введите имя клиента: ')
+                surname = input('Введите фамилию клиента: ')
+                email = input('Введите e-mail клиента: ')
+                phone = input('Введите телефон клиента: ')
+
+                client_list = find_client(conn, name, surname, email, phone)
+                print()
+                print(*client_list, sep="\n")
+
+            elif key == '7':
+
+                client_list = all_client(conn)
+                print()
+                print(*client_list, sep="\n")
+
+            elif key == '8':
+
+                clear_all_phones(conn, True)
+
+            elif key == '9':
+
+                clear_all_client(conn, True)
+
+            else:
+
+                print('')
+                print('Введено не верное значение!')
+
+            print('')
+            key = input_key()
