@@ -96,15 +96,15 @@ def update_clietn(conn, id_client, name=None, surname=None, email=None, messages
             if not name == None:
                 cur.execute("""
                 UPDATE clients SET name=%s WHERE id=%s;
-                """, (name, id_client, ))
+                """, (name, id_client))
             if not surname == None:
                 cur.execute("""
                 UPDATE clients SET surname=%s WHERE id=%s;
-                """, (surname, id_client, ))
+                """, (surname, id_client))
             if not email == None:
                 cur.execute("""
                 UPDATE clients SET email=%s WHERE id=%s;
-                """, (email, id_client, ))
+                """, (email, id_client))
                 # conn.commit()
             if messages:
                 print()
@@ -222,7 +222,7 @@ def find_client(conn, name=None, surname=None, email=None, phone=None) -> list:
             and (c.surname iLIKE %s or True=%s)
             and (c.email iLIKE %s or True=%s)
             and (p.phone iLIKE %s or True=%s);
-        """, ('%'+name+'%', all_name, '%'+surname+'%', all_surname, '%'+email+'%', all_email, '%'+phone+'%', all_phone, ))
+        """, ('%'+name+'%', all_name, '%'+surname+'%', all_surname, '%'+email+'%', all_email, '%'+phone+'%', all_phone))
 
         result = cur.fetchall()
         client_list += result
